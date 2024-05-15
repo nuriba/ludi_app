@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ludi Dashboard</title>
+    <!-- Include date-fns adapter for Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <!-- Include Chart.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Ludi Dashboard</h1>
+    
+    <h2>Company User Counts</h2>
+    <table border="1">
+        <tr>
+            <th>Company</th>
+            <th>User Count</th>
+        </tr>
+        {% for company, count in company_user_counts.items() %}
+        <tr>
+            <td>{{ company }}</td>
+            <td>{{ count }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    
+    <h2>Daily Growth of Total Users</h2>
+    <canvas id="userGrowthChart" width="400" height="200"></canvas>
+    <script>
+        fetch('/growth')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);  // Log data to the console for debugging
+                const labels = data.map(item => item.date);
+                const counts = data.map(item => item.count);
+
+                const ctx = document.getElementById('userGrowthChart').getContext('2d');
+                const chart = new Chart(ctx, {
+                    type: 'line',  // Specify the chart type
+                    data: {
+                        labels: labels,  // X-axis labels
+                        datasets: [{
+                            label: 'Total Users',
+                            data: counts,  // Y-axis data
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            x: {
+                                type: 'time',  // X-axis is time-based
+                                time: {
+                                    unit: 'day'
+                                }
+                            },
+                            y: {
+                                beginAtZero: true  // Start Y-axis at zero
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching growth data:', error));
+    </script>
+</body>
+</html>
